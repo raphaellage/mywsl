@@ -47,9 +47,12 @@ RUN yay -S zsh nerd-fonts-fira-code lua --noconfirm \
 # lunarvim
 RUN bash <(curl -s https://raw.githubusercontent.com/lunarvim/lunarvim/master/utils/installer/install.sh) -y --no-install-dependencies || true
 
+COPY oh-my-wsl.omp.json /home/${USER}/.oh-my-wsl.omp.json
 COPY .bashrc /home/${USER}/.bashrc
 COPY .zshrc /home/${USER}/.zshrc
-COPY oh-my-wsl.omp.json /home/${USER}/.oh-my-wsl.omp.json
+
+# Rust stuff
+RUN source /home/${USER}/.cargo/env && cargo install bat exa procs du-dust ytop tealdeer grex fd-find git-delta zoxide
 
 CMD ["bash"]
 
