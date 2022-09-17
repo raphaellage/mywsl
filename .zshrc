@@ -1,11 +1,12 @@
 eval "$(~/.homebrew/bin/brew shellenv)"
-eval "$(oh-my-posh init zsh --config ~/.oh-my-wsl.omp.json)"
 
 source ~/.profile
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source ~/.zsh/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
 export PATH="$HOME/.local/bin:$PATH"
+
+eval "$(starship init zsh)"
 
 # aliases
 alias ls="exa  --icons"
