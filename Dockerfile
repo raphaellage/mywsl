@@ -61,9 +61,3 @@ RUN sudo echo -e "[USER]\ndefault=${user}" | sudo tee -a /etc/wsl.conf
 RUN sudo groupadd docker && sudo usermod -aG docker ${USER}
 
 CMD ["zsh"]
-
-#docker build --build-arg USER_PASSWORD=1337 --build-arg USER=rapll -t mywsl .
-#docker run -h mywsl -e TZ=America/Sao_Paulo --name mywsl mywsl
-#docker export --output="mywsl.tar" mywsl
-#wsl --import mywsl .\mywsl .\mywsl.tar
-#wsl --set-default mywsl
