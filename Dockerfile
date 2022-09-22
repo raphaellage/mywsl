@@ -1,7 +1,6 @@
-FROM archlinux:base as nesx
+FROM archlinux:base as mywsl
 
-ARG USER=rapll
-ARG HOST_HOSTNAME=nesx
+ARG USER
 ARG USER_PASSWORD
 
 # pacman
@@ -12,7 +11,7 @@ RUN echo "ParallelDownloads = 5" >> /etc/pacman.conf
 
 # user setting
 RUN echo "%wheel ALL=(ALL) ALL" > /etc/sudoers.d/wheel
-RUN useradd ${USER} && usermod -L ${USER}
+RUN useradd -m -d /home/${USER} -g root -G wheel -s /bin/bash ${USER} -u 1000 -p "$(openssl passwd -1 ${USER_PASSWORD})"
 RUN echo "${USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 RUN echo "root ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
@@ -40,8 +39,7 @@ RUN mkdir /home/${USER}/.yay && cd /home/${USER}/.yay && git clone https://aur.a
 
 # yay needed packages
 RUN yay -S zsh nerd-fonts-fira-code lua --noconfirm \
-    && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions \
-    && git clone https://github.com/marlonrichert/zsh-autocomplete.git ~/.zsh/zsh-autocomplete
+    && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions
 
 # lunarvim
 RUN bash <(curl -s https://raw.githubusercontent.com/lunarvim/lunarvim/master/utils/installer/install.sh) -y --no-install-dependencies || true
@@ -51,20 +49,21 @@ RUN source /home/${USER}/.cargo/env && cargo install bat exa procs ytop tealdeer
 
 RUN sudo pacman -S wget gcc --noconfirm
 
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.sh -O cmake.sh \
-    && sudo sh cmake.sh --prefix=/usr/local/ --exclude-subdir
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2-Linux-x86_64.sh -O .cmake.sh \
+    && sudo sh .cmake.sh --prefix=/usr/local/ --exclude-subdir
 
 RUN source /home/${USER}/.cargo/env && cargo install starship
 
-RUN sudo rm -rf ~/.config && mkdir ~/.config && git clone https://gist.github.com/2849cef0a9601df6e709288d6d4e5819.git .config
+RUN mkdir .config/starship && git clone https://gist.github.com/2849cef0a9601df6e709288d6d4e5819.git .config/starship
 COPY .bashrc /home/${USER}/.bashrc
 COPY .zshrc /home/${USER}/.zshrc
-COPY wsl.conf /etc/wsl.conf
-RUN sudo chown ${USER}:${USER} /etc/wsl.conf && echo "default=${USER}" >> /etc/wsl.conf
+RUN sudo echo -e "[USER]\ndefault=${user}" | sudo tee -a /etc/wsl.conf
+RUN sudo groupadd docker && sudo usermod -aG docker ${USER}
 
 CMD ["zsh"]
 
-#docker build --build-arg USER_PASSWORD=1337 -t arch .
-#docker run -h nesx -e TZ=America/Sao_Paulo -it arch
-#docker run -h nesx -e TZ=America/Sao_Paulo --name arch arch
-#docker export --output="oh-my-wsl.tar-gz" arch
+#docker build --build-arg USER_PASSWORD=1337 --build-arg USER=rapll -t mywsl .
+#docker run -h mywsl -e TZ=America/Sao_Paulo --name mywsl mywsl
+#docker export --output="mywsl.tar" mywsl
+#wsl --import mywsl .\mywsl .\mywsl.tar
+#wsl --set-default mywsl
